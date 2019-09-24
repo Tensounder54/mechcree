@@ -1,0 +1,191 @@
+rule("INITIALIZE NUMBER OF DOUBLE JUMPS IN (A)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	actions
+	{
+		Set Player Variable(Event Player, A, 1);
+	}
+}
+
+rule("ALLOW DOUBLE JUMP (B) IF YOU ARE > 0.8 ALTITUDE, NOT HOLDING JUMP BUTTON, AND HAVE DOUBLE JUMPS (A)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Altitude Of(Event Player) > 0.800;
+		Is Button Held(Event Player, Jump) == False;
+		Player Variable(Event Player, A) > 0;
+	}
+
+	actions
+	{
+		Set Player Variable(Event Player, B, True);
+	}
+}
+
+rule("DISALLOW DOUBLE JUMP (B) IF YOU ARE OUT OF JUMPS (A)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Player Variable(Event Player, A) <= 0;
+	}
+
+	actions
+	{
+		Set Player Variable(Event Player, B, False);
+	}
+}
+
+rule("IF YOU JUMP WHILE IN THE AIR AND DOUBLE JUMP IS ALLOWED (B), DOUBLE JUMP AND CONSUME A CHARGE (A)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Player Variable(Event Player, B) == True;
+		Is Button Held(Event Player, Jump) == True;
+	}
+
+	actions
+	{
+		Apply Impulse(Event Player, Up, 10, To World, Cancel Contrary Motion);
+		Modify Player Variable(Event Player, A, Subtract, 1);
+	}
+}
+
+rule("TOUCHING THE GROUND RESETS YOUR JUMP COUNT (A) AND DISALLOWS DOUBLE JUMP (B)")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Is In Air(Event Player) != True;
+	}
+
+	actions
+	{
+		Set Player Variable(Event Player, A, 1);
+		Set Player Variable(Event Player, B, False);
+	}
+}
+
+rule("Fires Secondary if Primary fire is pressed")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Is Button Held(Event Player, Primary Fire) == True;
+		Is Button Held(Event Player, Crouch) == False;
+	}
+
+	actions
+	{
+		Set Secondary Fire Enabled(Event Player, True);
+		Press Button(Event Player, Secondary Fire);
+	}
+}
+
+rule("Use Roll while held")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Is Button Held(Event Player, Ability 1) == True;
+	}
+
+	actions
+	{
+		Press Button(Event Player, Ability 1);
+	}
+}
+
+rule("Make Player invisable if crouching")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Is Button Held(Event Player, Crouch) == True;
+	}
+
+	actions
+	{
+		Set Invisible(Event Player, Enemies);
+		Set Primary Fire Enabled(Event Player, False);
+		Set Secondary Fire Enabled(Event Player, False);
+		Set Ability 1 Enabled(Event Player, False);
+		Set Ability 2 Enabled(Event Player, False);
+		Create Effect(Event Player, Cloud, Purple, Event Player, 100, Visible To Position and Radius);
+	}
+}
+
+rule("Make player visable if not Crouching")
+{
+	event
+	{
+		Ongoing - Each Player;
+		All;
+		All;
+	}
+
+	conditions
+	{
+		Is Button Held(Event Player, Crouch) == False;
+	}
+
+	actions
+	{
+		Set Invisible(Event Player, None);
+		Set Primary Fire Enabled(Event Player, False);
+		Set Secondary Fire Enabled(Event Player, True);
+		Set Ability 1 Enabled(Event Player, True);
+		Set Ability 2 Enabled(Event Player, True);
+		Destroy All Effects;
+	}
+}
